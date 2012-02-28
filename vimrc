@@ -39,9 +39,14 @@ set cindent
 set viminfo='50,<1000,s100,:300,n~/.viminfo
 set nu
 " set viminfo='1000,:300,n~/.viminfo
-"set cul                 " sets cursor highlighting
+" set cul                 " sets cursor highlighting
+set nocul
+set mouse=a
+set clipboard+=unnamed
 
 set hidden
+set cscopequickfix=s-,c-,d-,i-,t-,e-
+set wildignore=*.o,*.obj,ram-*,ssd-*,hdd-*,0x*,*.doc*,*stdout*,*stderr,*.dep,*_linux_d,*.vcproj,ext/include*
 
 set nocp
 filetype off
@@ -49,22 +54,29 @@ call pathogen#infect()
 call pathogen#helptags()
 filetype plugin indent on
 syntax on
+let c_space_errors = 1
 
-" specific to omnicppplugin
-let OmniCpp_MayCompleteDot = 0
-let OmniCpp_MayCompleteArrow = 0
+" -- configs --
+let OmniCpp_MayCompleteDot = 1 " autocomplete with .
+let OmniCpp_MayCompleteArrow = 1 " autocomplete with ->
+let OmniCpp_MayCompleteScope = 1 " autocomplete with ::
+let OmniCpp_SelectFirstItem = 2 " select first item (but don't insert)
+let OmniCpp_NamespaceSearch = 2 " search namespaces in this and included files
+let OmniCpp_ShowPrototypeInAbbr = 1 " show function prototype (i.e. parameters) in popup window
 
 " Tab and shiftwidth etc.
-set sts=4               " Use mixture tabs and spaces while editing.
-set shiftwidth=4        " Indent by four columns at a time
-set tabstop=8           " Indent by eight columns at a time
-set noexpandtab           
+" set sts=4               " Use mixture tabs and spaces while editing.
+set shiftwidth=4        " Indent by four columns at a time for >> and <<
+set tabstop=4           " tab is x spaces
+set expandtab           " tabs are spaces
 
 " Remove the darn menu and the toolbar since rendering them 
 " over a remote connection seems to take ages.
 set guioptions-=T
 set guioptions-=L
-"set guioptions-=m
+set guioptions-=r
+set guioptions-=R
+" set guioptions-=m
 
 " vim -b : edit binary using xxd-format!
 augroup Binary
@@ -80,6 +92,7 @@ augroup END
 
 set guifont=Bitstream\ Vera\ Sans\ Mono\ 11
 set grepprg=grep\ -n\ -r\ $*\ *
+set grepprg=internal
 
 "source $VIMRUNTIME/ftplugin/man.vim
 
@@ -118,34 +131,8 @@ if version >= 500
   nnoremap <C-D> :set hlsearch!<CR>:set hlsearch?<CR>
 endif
 
-" <C-U>: toggle wrap
-nnoremap <C-U> :set wrap!<CR>:set wrap?<CR>
-
-" gp: toggle paste
-nnoremap gp :set paste!<CR>:set paste?<CR>
-
-map <c-w><c-f> :FirstExplorerWindow<cr>
-map <c-w><c-b> :BottomExplorerWindow<cr>
-map <c-w><c-t> :WMToggle<cr>
-
-let winManagerWindowLayout = 'BufExplorer'
-
-"""""
-""""" MACRO DEFINITIONS
-"""""
-
-" Dictionary lookup
-" nmap _L :r !/usr/bin/look -f  /usr/share/dict/web2<S-Left><Left>
-" vmap _L y:r !/usr/bin/look -f  /usr/share/dict/web2<S-Left><Left><C-R>"
-nmap _L :r !/usr/bin/look 
-vmap _L y:r !/usr/bin/look <C-R>"
-
-" Run make with prompted arguments
-nmap _M :set makeprg=gmake<CR>:make  ":" Makefile<S-Left><S-Left><Left>
-vmap _M y:set makeprg=gmake<CR>:make <C-R>" ":" Makefile<S-Left><S-Left><Left>
-
 " New cscope connection
-nmap _CS :cs kill -1<CR>:cs add cscope.out<CR>
+nmap _CS :cs kill -1<CR>:cs add cscope.out<CR>:set tags=$PWD/tags<CR>
 
 " Update cscope data
 nmap _CU :!cscope -b<CR>:cs kill -1<CR>:cs add cscope.out<CR>
@@ -156,51 +143,16 @@ nmap _CR :!~/scripts/csgen.sh<CR>:cs kill -1<CR>:cs add cscope.out<CR>
 " set find path
 nmap _SF :set path=$PWD/**<CR>
 
+" remove all Extra spaces
+nmap _SS :%s/\s\+$//g<CR>
+
 " Insert current date and time in ISO 8601 format
 " into the file and the cut buffer
 " nmap _D mdo<C-R>=strftime("[%Y-%m-%d %H:%M:%S]")<CR><Esc>0y$`d
 nmap _D i<C-R>=strftime("[%Y-%m-%d %H:%M:%S]")<CR> <Esc>
 
-" Trim whitespace:
-"   _S removes trailing whitespace
-"   _T squeezes multiple blank lines and clears quoted empty lines
-" nnoremap _S :%s/[ <C-I>]\\+$//<CR>`':set nohlsearch<CR>
-" vnoremap _S :s/[ <C-I>]\\+$//<CR>:set nohlsearch<CR>
-" nnoremap _T :%s/^>[ <C-I>]*$//<CR>`':g/^$/,/./-j<CR>`':set nohlsearch<CR>
-" vnoremap _T :%s/^>[ <C-I>]*$//<CR>`':'<,'>g/^$/,/./-j<CR>`':set nohlsearch<CR>
-
-" Go to file and line number
-" nmap gl mLf:lyw`Lgf:<C-R>"<CR>
-" nmap <C-W>l mLf:lyw`L<C-W>f:<C-R>"<CR>
-" nmap <C-W><C-L> <C-W>l
-
 " Re-source vim file
 nmap _E :source <C-R>=MacrosDir<CR>.vim<Left><Left><Left><Left>vimrc
-
-" PGP filters
-nmap _PE :%!pgp -feast 2>/dev/tty
-vmap _PE :!pgp -feast 2>/dev/tty
-nmap _PD :/^-----BEGIN PGP.*MESSAGE/,/^-----END PGP/!pgp -f 2>/dev/tty
-nmap _PS :%!pgp -fast +clear 2>/dev/tty
-vmap _PS :!pgp -fast +clear 2>/dev/tty
-
-" Set text reformatting width (right margin)
-nmap _2 :set textwidth=20<CR>
-nmap _25 :set textwidth=25<CR>
-nmap _3 :set textwidth=30<CR>
-nmap _4 :set textwidth=40<CR>
-nmap _5 :set textwidth=50<CR>
-nmap _6 :set textwidth=60<CR>
-nmap _7 :set textwidth=70<CR>
-nmap _8 :set textwidth=80<CR>
-nmap _9 :set textwidth=0<CR>
-
-" Diff setting. diff put, then find the next diff
-nmap ds dp]c
-
-" Move around in quickfix mode
-" map ( :cp<CR>0
-" map ) :cn<CR>0
 
 """"
 """" cscope stuff
@@ -215,7 +167,7 @@ nmap <C-Space>f :scs find f <C-R>=expand("<cfile>")<CR><CR>
 nmap <C-Space>i :scs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
 nmap <C-Space>d :scs find d <C-R>=expand("<cword>")<CR><CR>
 
-"----------------------------------------------------------------
-map  X      xj
+map <C> <Esc>
 
-"----------------------------------------------------------------
+map gf gF
+cs add cscope.out
