@@ -1,0 +1,57 @@
+*manpageview.txt*	Man Page Viewer			Oct 31, 2003
+
+Author:  Charles E. Campbell, Jr.  <cec@NgrOyphSon.gPsfAc.nMasa.gov>
+	  (remove NOSPAM from Campbell's email first)
+
+==============================================================================
+1. Contents				*manpageview* *manpageview-contents*
+
+	1. Contents.................: |manpageview-contents|
+	2. ManPageView Options......: |manpageview-options|
+	3. ManPageView Usage........: |manpageview-usage|
+
+==============================================================================
+
+2. ManPageView Options					*manpageview-options*
+
+	g:manpageview_options : extra options that will be passed on when
+	                        invoking the man command
+	  examples:
+	            let g:manpageview_options= "-P 'cat -'"
+	            let g:manpageview_options= "-c"
+	            let g:manpageview_options= "-Tascii"
+	
+	g:manpageview_winopen : may take on one of six values:
+
+	   "only"    man page will become sole window.
+	             Side effect: All windows' contents will be saved first!  (windo w)
+	             Use :q to terminate the manpage and restore the window setup.
+	             Note that mksession is used for this option, hence the
+	             +mksession configure-option is required.
+	   "hsplit"  man page will appear in a horizontally          split window (default)
+	   "vsplit"  man page will appear in a vertically            split window
+	   "hsplit=" man page will appear in a horizontally & evenly split window
+	   "vsplit=" man page will appear in a vertically   & evenly split window
+	   "reuse"   man page will re-use current window.  Use <ctrl-o> to return.
+	
+	g:manpageview_server : for WinNT; uses rsh to read manpage remotely
+	g:manpageview_user   : use given server (host) and username
+	  examples:
+	            let g:manpageview_server= "somehostname"
+	            let g:manpageview_user  = "username"
+
+==============================================================================
+
+3. ManPageView Usage					*manpageview-usage*
+
+	:Man topic
+	:Man topic booknumber
+	:Man booknumber topic
+	:Man topic(booknumber)
+	:Man      -- will restore position prior to use of :Man
+	             (only for g:manpageview_winopen == "only")
+	Put cursor on topic, press "K" while in normal mode
+	
+
+==============================================================================
+vim:tw=78:ts=8:ft=help
